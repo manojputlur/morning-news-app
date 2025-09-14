@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1e293b">
+    <title>Morning Brief</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #312e81 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        /* Space Background Effects */
+        .space-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .space-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at top right, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
+        }
+
+        .space-bg::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at bottom left, rgba(147, 51, 234, 0.05) 0%, transparent 50%);
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s infinite;
+        }
+
+        .star:nth-child(1) { top: 20%; left: 20%; width: 2px; height: 2px; animation-delay: 0s; }
+        .star:nth-child(2) { top: 40%; right: 30%; width: 1px; height: 1px; animation-delay: 1s; }
+        .star:nth-child(3) { bottom: 30%; left: 25%; width: 1px; height: 1px; animation-delay: 0.5s; }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* Loading Animation */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-spinner {
+            width: 64px;
+            height: 64px;
+            border: 4px solid rgba(59, 130, 246, 0.3);
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 24px;
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .content-wrapper {
+            padding: 32px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 24px 0;
+            position: relative;
+            z-index: 20;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .app-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .app-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .app-subtitle {
+            font-size: 14px;
+            color: #bfdbfe;
+            margin: 0;
+        }
+
+        .refresh-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+        }
+
+        .timestamp {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #bfdbfe;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2);
+        }
+
+        .card-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Top Lines */
+        .top-lines-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+        }
+
+        .section {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(100, 116, 139, 0.5);
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .news-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .news-item {
+            background: rgba(51, 65, 85, 0.3);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .news-item:hover {
+            background: rgba(51, 65, 85, 0.5);
+        }
+
+        .news-item-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        /* Market Pulse */
+        .market-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .market-card {
+            background: rgba(51, 65, 85, 0.4);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .market-card:hover {
+            background: rgba(51, 65, 85, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .ticker-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #bfdbfe;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .price-side {
+            text-align: center;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .price-main {
+            text-align: center;
+            padding: 0 16px;
+        }
+
+        .current-price {
+            font-size: 24px;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .change-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .change-positive {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .change-negative {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        /* News Sections */
+        .news-section {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-button {
+            width: 100%;
+            background: none;
+            border: none;
+            padding: 24px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            color: white;
+        }
+
+        .section-button:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .section-button-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .section-icon {
+            font-size: 32px;
+        }
+
+        .section-name {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .chevron {
+            font-size: 20px;
+            color: #60a5fa;
+            transition: transform 0.3s ease;
+        }
+
+        .chevron.rotated {
+            transform: rotate(180deg);
+        }
+
+        .section-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .section-content.expanded {
+            max-height: 2000px;
+            transition: max-height 0.5s ease-in;
+        }
+
+        .stories-container {
+            padding: 0 32px 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .story-card {
+            background: rgba(51, 65, 85, 0.3);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .story-card:hover {
+            background: rgba(51, 65, 85, 0.5);
+        }
+
+        .story-headline {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 16px;
+            line-height: 1.3;
+        }
+
+        .story-summary {
+            color: #cbd5e1;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .takeaway-box {
+            background: rgba(251, 146, 60, 0.1);
+            border-left: 4px solid #f59e0b;
+            border-radius: 0 8px 8px 0;
+            padding: 16px;
+        }
+
+        .takeaway-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #fbbf24;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .takeaway-text {
+            color: #e2e8f0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Bottom Line */
+        .bottom-line {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(139, 92, 246, 0.8));
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .bottom-line-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .bottom-line-text {
+            font-size: 18px;
+            line-height: 1.6;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 32px 0;
+            color: #94a3b8;
+            border-top: 1px solid rgba(100, 116, 139, 0.5);
+        }
+
+        .footer p {
+            margin: 8px 0;
+        }
+
+        /* Loading State */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        .loading-text {
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .loading-subtitle {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .container { padding: 0 16px; }
+            .header { padding: 16px 0; }
+            .app-title { font-size: 24px; }
+            .app-icon { width: 40px; height: 40px; font-size: 20px; }
+            .card { padding: 20px; }
+            .card-title { font-size: 20px; }
+            .top-lines-grid { grid-template-columns: 1fr; gap: 24px; }
+            .market-grid { grid-template-columns: 1fr; }
+            .current-price { font-size: 20px; }
+            .story-headline { font-size: 18px; }
+            .bottom-line-text { font-size: 16px; }
+            .content-wrapper { gap: 24px; }
+            .section-button { padding: 20px; }
+            .stories-container { padding: 0 20px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Space Background -->
+    <div class="space-bg">
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loading" class="loading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text gradient-text">Brewing your morning brief...</div>
+        <div class="loading-subtitle">Gathering the latest intelligence</div>
+    </div>
+
+    <!-- Main App -->
+    <div id="main-app" class="hidden">
+        <!-- Header -->
+        <header class="header">
+            <div class="container">
+                <div class="header-content">
+                    <div class="header-left">
+                        <div class="app-icon">☕</div>
+                        <div>
+                            <h1 class="app-title">Morning Brief</h1>
+                            <p class="app-subtitle">Your 5-Minute Morning Intelligence</p>
+                        </div>
+                    </div>
+                    <button id="refresh-btn" class="refresh-btn">
+                        <span id="refresh-icon">🔄</span>
+                        <span class="refresh-text">Refresh</span>
+                    </button>
+                </div>
+                <div class="timestamp">
+                    <span>🕐</span>
+                    <span>Last updated: <span id="update-time"></span></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="container">
+            <div class="content-wrapper">
+                <!-- Date -->
+                <div style="text-align: center;">
+                    <div id="current-date" style="font-size: 20px; font-weight: 500;"></div>
+                </div>
+
+                <!-- Today's Top Lines -->
+                <div class="card">
+                    <h2 class="card-title">
+                        <span style="font-size: 32px;">⚡</span>
+                        <span class="gradient-text">Today's Top Lines</span>
+                    </h2>
+                    <div class="top-lines-grid">
+                        <!-- Left Column -->
+                        <div class="section">
+                            <div>
+                                <div class="section-header">
+                                    <div style="font-size: 24px;">🏛️</div>
+                                    <h3 class="section-title" style="color: #22d3ee;">Domestic Politics</h3>
+                                </div>
+                                <ul id="domestic-politics" class="news-list"></ul>
+                            </div>
+                            <div>
+                                <div class="section-header">
+                                    <div style="font-size: 24px;">🚀</div>
+                                    <h3 class="section-title" style="color: #a78bfa;">Technology</h3>
+                                </div>
+                                <ul id="tech-news" class="news-list"></ul>
+                            </div>
+                        </div>
+                        <!-- Right Column -->
+                        <div class="section">
+                            <div>
+                                <div class="section-header">
+                                    <div style="font-size: 24px;">🌍</div>
+                                    <h3 class="section-title" style="color: #10b981;">Foreign Politics</h3>
+                                </div>
+                                <ul id="foreign-politics" class="news-list"></ul>
+                            </div>
+                            <div>
+                                <div class="section-header">
+                                    <div style="font-size: 24px;">💰</div>
+                                    <h3 class="section-title" style="color: #f59e0b;">World Economics</h3>
+                                </div>
+                                <ul id="world-economics" class="news-list"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Market Pulse -->
+                <div class="card">
+                    <h2 class="card-title">
+                        <span style="font-size: 32px;">📈</span>
+                        <span class="gradient-text">Market Pulse</span>
+                    </h2>
+                    <div id="market-data" class="market-grid"></div>
+                </div>
+
+                <!-- News Sections -->
+                <div id="news-sections"></div>
+
+                <!-- Bottom Line -->
+                <div class="bottom-line">
+                    <h3 class="bottom-line-title">
+                        <span style="font-size: 32px;">📍</span>
+                        The Bottom Line
+                    </h3>
+                    <p id="bottom-line-text" class="bottom-line-text"></p>
+                </div>
+
+                <!-- Footer -->
+                <footer class="footer">
+                    <p style="font-size: 16px; margin-bottom: 8px;">Smart, busy people read the Morning Brief.</p>
+                    <p style="font-size: 14px; opacity: 0.75;">© 2025 Morning Brief. Curated with AI, crafted for humans.</p>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // News data
+        const newsData = {
+            date: new Date().toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            }),
+            topLines: {
+                domesticPolitics: [
+                    "Congressional Budget Negotiations Enter Critical Phase",
+                    "Federal Reserve Signals Potential Policy Shift"
+                ],
+                foreignPolitics: [
+                    "EU-China Trade Relations Face New Tensions",
+                    "Middle East Diplomatic Initiative Gains Momentum"
+                ],
+                tech: [
+                    "AI Regulation Framework Advances in Senate",
+                    "Tech Giants Face New Antitrust Scrutiny"
+                ],
+                worldEconomics: [
+                    "Global Supply Chain Resilience Shows Improvement",
+                    "Emerging Markets Navigate Currency Volatility"
+                ]
+            },
+            marketData: {
+                sp500: { name: 'S&P 500', current: 4485.23, monthLow: 4321.45, monthHigh: 4567.89, change: 0.85 },
+                bitcoin: { name: 'Bitcoin', current: 43250, monthLow: 39500, monthHigh: 46800, change: -1.2 },
+                ethereum: { name: 'Ethereum', current: 2650, monthLow: 2400, monthHigh: 2850, change: 2.1 },
+                cof: { name: 'Capital One', current: 142.50, monthLow: 135.20, monthHigh: 148.75, change: 0.45 },
+                google: { name: 'Google', current: 138.25, monthLow: 132.10, monthHigh: 145.90, change: 1.3 },
+                meta: { name: 'Meta', current: 485.75, monthLow: 462.30, monthHigh: 498.20, change: -0.8 },
+                apple: { name: 'Apple', current: 189.95, monthLow: 182.50, monthHigh: 195.40, change: 0.65 },
+                nvidia: { name: 'NVIDIA', current: 875.50, monthLow: 820.25, monthHigh: 920.75, change: 3.2 }
+            },
+            sections: {
+                domesticPolitics: {
+                    icon: '🏛️',
+                    title: 'Domestic Politics',
+                    stories: [
+                        {
+                            headline: "Congressional Budget Negotiations Enter Critical Phase",
+                            summary: "Bipartisan talks show progress on infrastructure spending, but disagreement remains on tax provisions. House Speaker indicates flexibility on key sticking points while Senate Majority Leader pushes for faster timeline. Treasury Department warns of potential economic impacts if no agreement reached by month's end.",
+                            takeaway: "This isn't just political posturing—infrastructure spending directly impacts construction, materials, and transportation sectors. A bipartisan deal could unlock $500B in economic activity while failure might trigger market volatility in government contractor stocks."
+                        },
+                        {
+                            headline: "Federal Reserve Signals Potential Policy Shift",
+                            summary: "Fed officials hint at more flexible approach to inflation targeting amid economic uncertainty. Chair Powell's recent speeches suggest willingness to tolerate higher inflation if employment remains strong. Markets interpreting signals as dovish pivot from previous hawkish stance.",
+                            takeaway: "This could mark the end of aggressive rate hikes—bank margins may compress but borrowing costs for consumers and businesses should decrease. Tech and growth stocks typically outperform in lower rate environments."
+                        }
+                    ]
+                },
+                foreignPolitics: {
+                    icon: '🌍',
+                    title: 'Foreign Politics',
+                    stories: [
+                        {
+                            headline: "EU-China Trade Relations Face New Tensions",
+                            summary: "Brussels considers additional tariffs on Chinese EVs, escalating trade disputes beyond previous semiconductor restrictions. German automakers express concern over potential retaliation affecting their Chinese operations. European Commission cites unfair subsidies and market access issues.",
+                            takeaway: "The global EV market is fragmenting into regional blocs—Tesla benefits from manufacturing in multiple regions while traditional automakers face margin pressure. European luxury brands could see Chinese market share erode."
+                        },
+                        {
+                            headline: "Middle East Diplomatic Initiative Gains Momentum",
+                            summary: "Regional powers show renewed interest in multilateral peace framework, with UAE and Saudi Arabia taking leading roles. Oil production cooperation agreements being discussed alongside security arrangements. Iran remains skeptical but hasn't ruled out participation.",
+                            takeaway: "Regional stability could unlock massive infrastructure investment—Gulf sovereign wealth funds are sitting on $3T in assets. Defense contractors and energy infrastructure companies could see significant opportunities."
+                        }
+                    ]
+                },
+                tech: {
+                    icon: '🚀',
+                    title: 'Technology',
+                    stories: [
+                        {
+                            headline: "AI Regulation Framework Advances in Senate",
+                            summary: "Bipartisan bill focuses on transparency requirements for AI systems in critical infrastructure. Tech giants generally supportive of measured approach while startups worry about compliance costs. Framework emphasizes safety without stifling innovation.",
+                            takeaway: "This creates a two-tiered market—large tech companies can absorb compliance costs and may actually benefit from barriers to entry. AI startups need to factor regulatory expenses into funding requirements."
+                        },
+                        {
+                            headline: "Tech Giants Face New Antitrust Scrutiny",
+                            summary: "DOJ expands investigation into app store practices, with Apple and Google primary targets. Congressional hearings scheduled for next month focusing on marketplace competition. State attorneys general coordinating parallel investigations.",
+                            takeaway: "App store commissions generate $50B annually across the industry—any forced reduction directly impacts tech giant revenues. Smaller developers could see massive margin improvements if commission structures change."
+                        }
+                    ]
+                },
+                worldEconomics: {
+                    icon: '💰',
+                    title: 'World Economics',
+                    stories: [
+                        {
+                            headline: "Global Supply Chain Resilience Shows Improvement",
+                            summary: "Diversification efforts reduce single-point-of-failure risks, but costs remain elevated compared to pre-pandemic levels. Companies reporting 15-20% higher logistics expenses while delivery times stabilize. Reshoring trends accelerating in critical sectors.",
+                            takeaway: "This is the new normal—supply chain costs won't return to 2019 levels. Companies with domestic manufacturing capabilities and flexible supplier networks will outperform. Logistics and warehousing REITs remain attractive."
+                        },
+                        {
+                            headline: "Emerging Markets Navigate Currency Volatility",
+                            summary: "Brazilian real and Turkish lira face pressure as Fed policy uncertainty creates capital flow disruptions. Central banks in developing nations forced to choose between supporting currencies and maintaining economic growth. IMF monitoring situation closely.",
+                            takeaway: "Emerging market volatility often precedes broader global market stress—watch for contagion effects in commodity prices and multinational corporate earnings. Dollar strength creates headwinds for US exporters."
+                        }
+                    ]
+                }
+            },
+            bottomLine: "Today's convergence of monetary policy shifts, trade tensions, and regulatory changes creates both risks and opportunities. Smart money is building diversified positions while remaining nimble—the next six months will separate winners from losers across multiple sectors."
+        };
+
+        // Utility functions
+        function formatPrice(value, isCrypto = false) {
+            if (isCrypto && value > 1000) {
+                return `$${value.toLocaleString()}`;
+            } else if (isCrypto) {
+                return `$${value}`;
+            }
+            return `$${value.toFixed(2)}`;
+        }
+
+        function formatTime(date) {
+            return date.toLocaleTimeString('en-US', { 
+                hour: 'numeric', 
+                minute: '2-digit',
+                hour12: true 
+            });
+        }
+
+        // Load data function
+        function loadData() {
+            const loading = document.getElementById('loading');
+            const mainApp = document.getElementById('main-app');
+
+            loading.classList.remove('hidden');
+            mainApp.classList.add('hidden');
+
+            setTimeout(() => {
+                try {
+                    // Update date and time
+                    document.getElementById('current-date').textContent = newsData.date;
+                    document.getElementById('update-time').textContent = formatTime(new Date());
+                    
+                    // Load top lines
+                    const colors = {
+                        domesticPolitics: '#22d3ee',
+                        foreignPolitics: '#10b981',
+                        tech: '#a78bfa',
+                        worldEconomics: '#f59e0b'
+                    };
+
+                    Object.keys(newsData.topLines).forEach(category => {
+                        const element = document.getElementById(category === 'domesticPolitics' ? 'domestic-politics' : 
+                                                              category === 'foreignPolitics' ? 'foreign-politics' :
+                                                              category === 'tech' ? 'tech-news' : 'world-economics');
+                        element.innerHTML = newsData.topLines[category].map(line => 
+                            `<li class="news-item">
+                                <div class="news-item-content">
+                                    <span style="color: ${colors[category]};">▸</span>
+                                    <span>${line}</span>
+                                </div>
+                            </li>`
+                        ).join('');
+                    });
+                    
+                    // Load market data
+                    const marketContainer = document.getElementById('market-data');
+                    marketContainer.innerHTML = Object.entries(newsData.marketData).map(([key, data]) => {
+                        const isCrypto = key === 'bitcoin' || key === 'ethereum';
+                        const isPositive = data.change >= 0;
+                        const changeClass = isPositive ? 'change-positive' : 'change-negative';
+                        const changeArrow = isPositive ? '↑' : '↓';
+                        
+                        return `
+                            <div class="market-card">
+                                <div class="ticker-name">${data.name}</div>
+                                <div class="price-row">
+                                    <div class="price-side">
+                                        <div style="font-size: 10px; opacity: 0.7; margin-bottom: 4px;">Low</div>
+                                        <div style="font-family: monospace;">${formatPrice(data.monthLow, isCrypto)}</div>
+                                    </div>
+                                    <div class="price-main">
+                                        <div class="current-price">${formatPrice(data.current, isCrypto)}</div>
+                                        <div class="change-badge ${changeClass}">
+                                            <span>${changeArrow}</span>
+                                            <span>${Math.abs(data.change)}%</span>
+                                        </div>
+                                    </div>
+                                    <div class="price-side">
+                                        <div style="font-size: 10px; opacity: 0.7; margin-bottom: 4px;">High</div>
+                                        <div style="font-family: monospace;">${formatPrice(data.monthHigh, isCrypto)}</div>
+                                    </div>
+                                </div>
+                                <div style="font-size: 12px; color: #94a3b8; margin-top: 8px;">Month Range</div>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    // Load news sections
+                    const sectionsContainer = document.getElementById('news-sections');
+                    sectionsContainer.innerHTML = Object.entries(newsData.sections).map(([key, section]) => `
+                        <div class="news-section">
+                            <button onclick="toggleSection('${key}')" class="section-button">
+                                <div class="section-button-left">
+                                    <span class="section-icon">${section.icon}</span>
+                                    <span class="section-name">${section.title}</span>
+                                </div>
+                                <div id="chevron-${key}" class="chevron">▼</div>
+                            </button>
+                            <div id="content-${key}" class="section-content expanded">
+                                <div class="stories-container">
+                                    ${section.stories.map(story => `
+                                        <div class="story-card">
+                                            <h3 class="story-headline">${story.headline}</h3>
+                                            <p class="story-summary">${story.summary}</p>
+                                            <div class="takeaway-box">
+                                                <div class="takeaway-label">
+                                                    <span>💡</span>Why It Matters
+                                                </div>
+                                                <p class="takeaway-text">${story.takeaway}</p>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    // Load bottom line
+                    document.getElementById('bottom-line-text').textContent = newsData.bottomLine;
+                    
+                    // Show main app
+                    loading.classList.add('hidden');
+                    mainApp.classList.remove('hidden');
+                    
+                } catch (err) {
+                    console.error('Error loading data:', err);
+                }
+            }, 2000);
+        }
+
+        // Toggle section function
+        function toggleSection(sectionKey) {
+            const content = document.getElementById(`content-${sectionKey}`);
+            const chevron = document.getElementById(`chevron-${sectionKey}`);
+            
+            if (content.classList.contains('expanded')) {
+                content.classList.remove('expanded');
+                chevron.classList.add('rotated');
+                chevron.textContent = '▶';
+            } else {
+                content.classList.add('expanded');
+                chevron.classList.remove('rotated');
+                chevron.textContent = '▼';
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            
+            document.getElementById('refresh-btn').addEventListener('click', function() {
+                const icon = document.getElementById('refresh-icon');
+                icon.style.transform = 'rotate(360deg)';
+                icon.style.transition = 'transform 0.3s ease';
+                setTimeout(() => {
+                    icon.style.transform = '';
+                    loadData();
+                }, 300);
+            });
+        });
+    </script>
+</body>
+</html>
